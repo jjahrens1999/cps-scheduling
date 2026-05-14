@@ -18,13 +18,18 @@ public class MLLFInterrruptableScheduler extends Scheduler {
 
     @Override
     public List<Integer> getNextTaskId(int currentTime, int lastTaskId) {
+        // Filter out expired tasks
+        List<Task> nonExpiredTasks = tasks.stream()
+                .filter(task -> task.deadline() - task.rest() > currentTime)
+                .toList();
+
         // Check if a task still has laxity inversion duration left and return it if so
         Optional<TaskLaxityInversionDuration> taskWithLaxityInversionDurationLeft = taskLaxityInversionDurations.stream()
                 .filter(task -> task.taskId == lastTaskId)
                 .findAny();
 
         // Check if the task has not finished yet and is still in the scheduler
-        Optional<Task> lastTask = tasks.stream()
+        Optional<Task> lastTask = nonExpiredTasks.stream()
                 .filter(task -> task.id() == lastTaskId)
                 .findAny();
 
@@ -37,11 +42,6 @@ public class MLLFInterrruptableScheduler extends Scheduler {
             }
         }
         // Otherwise, run the MLLF scheduling algorithm to determine the next task to execute
-
-        // Filter out expired tasks
-        List<Task> nonExpiredTasks = tasks.stream()
-                .filter(task -> task.deadline() - task.rest() > currentTime)
-                .toList();
 
         // Map the laxities of all non expired tasks to a list of TaskLaxity objects
         List<TaskLaxity> laxities = nonExpiredTasks.stream()
@@ -101,8 +101,9 @@ public class MLLFInterrruptableScheduler extends Scheduler {
     }
 
     @Override
-    public void addToScheduler(int id, int startTime, int deadline, int rest, int numRequired) {
-        super.addToScheduler(id, startTime, deadline, rest, numRequired);
+    public void addToScheduler(int id, double startTimeDouble, double deadlineDouble, int rest, int numRequired) {
+        int startTime = (int) startTimeDouble;
+        super.addToScheduler(id, startTime, deadlineDouble, rest, numRequired);
 
         // Trigger rescheduling based on appearance of a new task, but only if it is actually a new task
         if (!taskLaxityInversionDurations.stream().map(TaskLaxityInversionDuration::taskId).toList().contains(id)) {

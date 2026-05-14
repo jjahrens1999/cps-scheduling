@@ -9,9 +9,15 @@ public abstract class Scheduler {
     public List<Task> tasks = new ArrayList<>();
     public Map<Integer, Integer> partialTasks = new HashMap<>() {};
 
-    public void addToScheduler(int id, int startTime, int deadline, int rest, int numRequired) {
+    public void addToScheduler(int id, double startTimeDouble, double deadlineDouble, int rest, int numRequired) {
+        if (rest == 0) {
+            return;
+        }
+        int startTime = (int) startTimeDouble;
+        int deadline = (int) deadlineDouble;
         if (numRequired == 1) {
             tasks.add(new Task(id, startTime, deadline, rest));
+            System.out.println("Added task " + id + " to scheduler with start time " + startTime + ", deadline " + deadline + " and rest " + rest);
             return;
         }
         if (partialTasks.containsKey(id) && partialTasks.get(id) == numRequired - 1) {

@@ -44,12 +44,12 @@ public class DuckDBLogger {
                 """;
     }
 
-    public void log(int taskId, double startTime, double finishTime, int deadline, String taskType, String scheduler, int switchTime, String recipeType) {
+    public void log(int taskId, double startTime, double finishTime, double deadline, String taskType, String scheduler, int switchTime, String recipeType) {
         try (PreparedStatement statement = connection.prepareStatement(buildDmlStatement())) {
             statement.setInt(1, taskId);
             statement.setInt(2, (int) startTime);
             statement.setInt(3, (int) finishTime);
-            statement.setInt(4, deadline);
+            statement.setInt(4, (int) deadline);
             statement.setString(5, taskType);
             statement.setString(6, scheduler);
             statement.setInt(7, switchTime);
